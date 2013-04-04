@@ -1,0 +1,33 @@
+{
+  "AppDescription": {
+    "en": "My App"
+  },
+  "AppIcon": {
+    "18x18": "",
+    "64x64": "",
+    "128x128": "",
+    "300x300": ""
+  },
+  "AppName": {
+    "en": "Description of My App"
+  },
+  "BundleIdentifier": "myapp",
+  "BundleType": "Application",
+  "BundleVersion": "0.0.1",
+  "Dependencies": {
+    "api": "1.5.1",
+    "views": "1.10.0"
+  },
+  "RequiredPermissions": [
+    "https://*",
+    "http://*"
+  ],
+  "SupportedDeviceClasses": [
+    "Web",
+    "Desktop"
+  ],
+  "SupportedLanguages": [
+    "en"
+  ],
+  "VendorIdentifier": "com.myorganization"
+}
