@@ -1,9 +1,13 @@
+List = null;
+
 require([
     '$api/models',
+    '$views/list#List',
     '$views/image#Image'
-], function(models, Image) {
+], function(models, List, Image) {
     'use strict';
 
+    List = List;
     var en_api_key = '70Z2JIDJG6ZUHDTQF';
 
     // Drag content into an HTML element from Spotify
@@ -52,15 +56,14 @@ require([
             .load(playlist_metadata_properties)
             .done(function(p){
 
-                /*var table = sp.require("sp://TODO table");
-                var list = new table.Table(p, function(track) {
+                var listHtml = List.forPlaylist(p);
+                document.body.appendChild(listHtml.node);
+                listHtml.init();
 
-                        var track = new views.Track(track, views.Track.FIELD.SHARE| views.Track.FIELD.STAR| views.Track.FIELD.NAME | views.Track.FIELD.ARTIST | views.Track.FIELD.ALBUM | views.Track.FIELD.DURATION);
-
-                });*/
+                console.log(listHtml);
 
                 playlist_metadata_HTML.innerHTML += '<h4>playlist metadata</h4>';
-                playlist_metadata_HTML.innerHTML += '<p>Name: ' + p.name.decodeForHtml() + '</p>';
+                playlist_metadata_HTML.innerHTML += '<p>Name: ' + p.name + '</p>';
                 p.tracks.snapshot().done(function(t){
                     var tracks = t.toArray();
                     var track_names = '';
@@ -69,12 +72,9 @@ require([
                     for(var i=0;i<tracks.length;i++){
 
                         var divId = tracks[i].uri.replace(':', '_').replace(':', '_');
-                        track_names += '<li>' + tracks[i].name ;
-                        track_names += '<div id="'+ divId + '">echo</div>';
-
-                        track_names += '</li>'
+                        track_names += '<li>' + tracks[i].name + '</li>';
                     }
-                    playlist_metadata_HTML.innerHTML += '<ol>' + track_names.toString() + '</ol>';
+                    // playlist_metadata_HTML.innerHTML += '<ol>' + track_names.toString() + '</ol>';
                     getTrackFromEchoNest(en_api_key, tracks);
                 });
             });
@@ -96,9 +96,27 @@ require([
                     bucket: ['audio_summary']
                 },
                 function (data) {
-                    console.log(data);
+                    //console.log(data);
                     if (checkResponse(data)) {
                         var spotifyId = data.response.track.foreign_id.replace('spotify-WW', 'spotify');
+
+
+
+                        /*<tr draggable="true" data-uri="spotify:track:7dvd3b2oz7AFgXrPBIIYxR" class="sp-list-item">
+                            <td class="sp-list-cell sp-list-cell-star"><span class="sp-icon-star-hitarea"><span class="sp-icon-star"></span>
+                            </span><span class="sp-icon-nowplaying"></span></td>
+                            <td style="width: 45.10022271714922%" class="sp-list-cell sp-list-cell-track">Dirt Off Your Shoulder/Lying From You</td><td style="width: 19.328666878778236%" class="sp-list-cell sp-list-cell-artist"><a href="spotify:artist:2tFblYtXKLTFjvH1sxfbv1" data-uri="spotify:artist:2tFblYtXKLTFjvH1sxfbv1">Jay-Z/ Linkin Park</a></td>
+                            <td class="sp-list-cell sp-list-cell-time">4:05</td>
+                            <td style="width: 25.77155583837098%" class="sp-list-cell sp-list-cell-album">
+                            <a href="spotify:album:5NH94cATqx5fjBE794xZLy" data-uri="spotify:album:5NH94cATqx5fjBE794xZLy">Collision Course</a></td></tr>
+                          */
+
+                        var trackTr = $('tr[data-uri=\'' + spotifyId +'\']')[0];
+                        var albumTd = $('tr[data-uri=\'' + spotifyId +'\'] td[class="sp-list-cell sp-list-cell-album"]')[0];
+                        console.log(albumTd);
+
+                        albumTd.innerHTML = '<div>' + data.response.track.audio_summary.tempo + '</div>';
+
                         var link = document.getElementById(spotifyId.replace(':', '_').replace(':', '_'));
 
                         link.innerHTML = data.response.track.audio_summary.tempo;
