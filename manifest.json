@@ -1,6 +1,6 @@
 {
   "AppDescription": {
-    "en": "My App"
+    "en": "echofy"
   },
   "AppIcon": {
     "18x18": "",
@@ -9,9 +9,9 @@
     "300x300": ""
   },
   "AppName": {
-    "en": "Description of My App"
+    "en": "Echofy Nest"
   },
-  "BundleIdentifier": "myapp",
+  "BundleIdentifier": "echofy",
   "BundleType": "Application",
   "BundleVersion": "0.0.1",
   "Dependencies": {
@@ -29,5 +29,5 @@
   "SupportedLanguages": [
     "en"
   ],
-  "VendorIdentifier": "com.myorganization"
+  "VendorIdentifier": "blakeit"
 }
