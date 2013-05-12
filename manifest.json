@@ -20,11 +20,8 @@
   },
   "RequiredPermissions": [
     "https://*",
-    "http://*"
-  ],
-  "SupportedDeviceClasses": [
-    "Web",
-    "Desktop"
+    "http://*",
+    "http://developer.echonest.com"
   ],
   "SupportedLanguages": [
     "en"
