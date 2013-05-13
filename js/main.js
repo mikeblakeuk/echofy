@@ -1,4 +1,5 @@
 List = null;
+inverse = false;
 
 require([
     '$api/models',
@@ -45,8 +46,6 @@ require([
         // PLAYLIST
         var playlist_metadata_HTML = document.getElementById('playlist-metadata');
         var playlist_metadata_properties = ['collaborative', 'description', 'name', 'owner', 'tracks'];
-        var oldPlayList = $('playlist');
-        oldPlayList.remove();
 
         models.Playlist.fromURI(uri)
             .load(playlist_metadata_properties)
@@ -54,9 +53,12 @@ require([
 
                 $('drop-box').innerText = p.name;
 
+                var oldPlayList = $('#playlist-div')[0];
+                oldPlayList.innerHTML = '';
                 var listHtml = List.forPlaylist(p);
-                document.body.appendChild(listHtml.node);
+                oldPlayList.appendChild(listHtml.node);
                 listHtml.init();
+
                 addSorting(listHtml);
 
                 p.tracks.snapshot().done(function (t) {
@@ -75,24 +77,26 @@ require([
 
                 return $(this).index() === 4;
 
-            }).sortElements(function (a, b) {
-                    console.log(a);
-                    return $.text([a]) > $.text([b]) ?
-                        inverse ? -1 : 1
-                        : inverse ? 1 : -1;
+            }).sortElements(function(a, b){
 
-                }, function () {
+                    a = $(a).text();
+                    b = $(b).text();
 
-                    // parentNode is the element we want to move
+                    return (
+                        isNaN(a) || isNaN(b) ?
+                            a > b : +a > +b
+                        ) ?
+                        inverse ? -1 : 1 :
+                        inverse ? 1 : -1;
+
+                }, function(){
                     return this.parentNode;
-
                 });
 
             inverse = !inverse;
 
         });
     }
-
 
     function getTrackFromEchoNest(api_key, tracks) {
         $.ajaxSetup({ traditional: true, cache: false });
@@ -122,10 +126,6 @@ require([
                         }
 
                         albumTd.innerHTML = '<div>' + Math.round(tempo) + '</div>';
-
-                        //var link = document.getElementById(spotifyId.replace(':', '_').replace(':', '_'));
-                        //link.innerHTML = data.response.track.audio_summary.tempo;
-
                     }
                 }
             );
