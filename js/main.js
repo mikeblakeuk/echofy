@@ -1,14 +1,20 @@
 List = null;
-inverse = false;
+var en_api_key = '70Z2JIDJG6ZUHDTQF ';
+i = 0;
 
 require([
     '$api/models',
-    '$views/list#List'
-], function (models, List) {
+    '$views/list#List',
+    '$views/buttons'
+], function (models, List, buttons) {
     'use strict';
 
     List = List;
-    var en_api_key = '70Z2JIDJG6ZUHDTQF';
+
+
+    var button = buttons.Button.withLabel('Sort');
+    var buttons_example = document.getElementById('buttons');
+    buttons_example.appendChild(button.node);
 
     // Drag content into an HTML element from Spotify
     var dropBox = document.getElementById('drop-box');
@@ -43,23 +49,24 @@ require([
     });
 
     function showPlayList(models, uri) {
-        // PLAYLIST
-        var playlist_metadata_HTML = document.getElementById('playlist-metadata');
         var playlist_metadata_properties = ['collaborative', 'description', 'name', 'owner', 'tracks'];
 
         models.Playlist.fromURI(uri)
             .load(playlist_metadata_properties)
             .done(function (p) {
 
-                $('drop-box').innerText = p.name;
+                $('drop-box').innerHTML = p.name;
 
                 var oldPlayList = $('#playlist-div')[0];
                 oldPlayList.innerHTML = '';
+
+                List.availableOptions.fetch = 'greedy';
                 var listHtml = List.forPlaylist(p);
+                console.log(listHtml);
                 oldPlayList.appendChild(listHtml.node);
                 listHtml.init();
 
-                addSorting(listHtml);
+                addSorting();
 
                 p.tracks.snapshot().done(function (t) {
                     var tracks = t.toArray();
@@ -68,34 +75,35 @@ require([
             });
     };
 
-    function addSorting(table) {
+    var inverse = false;
 
-        $('#sort').click(function () {
+    function addSorting() {
 
-            console.log($('table'));
-            $('table').find('td').filter(function () {
+        $('button[class=\'sp-button\']')
+            .click(function () {
 
-                return $(this).index() === 4;
+                $('table[class=\'sp-list-table\']').find('td').filter(function () {
+                    return $(this).index() === 4;
+                }).sortElements(function (a, b) {
 
-            }).sortElements(function(a, b){
+                        a = $(a).text();
+                        b = $(b).text();
 
-                    a = $(a).text();
-                    b = $(b).text();
+                        $('#error').text('sorting' + a + ' ' + b);
 
-                    return (
-                        isNaN(a) || isNaN(b) ?
-                            a > b : +a > +b
-                        ) ?
-                        inverse ? -1 : 1 :
-                        inverse ? 1 : -1;
+                        return (
+                            isNaN(a) || isNaN(b) ?
+                                a > b : +a > +b
+                            ) ?
+                            inverse ? -1 : 1 :
+                            inverse ? 1 : -1;
 
-                }, function(){
-                    return this.parentNode;
-                });
+                    }, function () {
+                        return this.parentNode;
+                    });
 
-            inverse = !inverse;
-
-        });
+                inverse = !inverse;
+            });
     }
 
     function getTrackFromEchoNest(api_key, tracks) {
@@ -104,8 +112,14 @@ require([
         var url = 'http://developer.echonest.com/api/v4/track/profile?api_key=' + api_key + '&callback=?';
 
         for (var i = 0; i < tracks.length; i++) {
-            var echoId = tracks[i].uri.replace('spotify', 'spotify-WW');
 
+            var x = 'tr[data-uri=\'' + tracks[i].uri + '\'] td[class=\'sp-list-cell sp-list-cell-album\']';
+            console.log(x)
+            var albumTd = $(x)[0]; //
+            albumTd.innerHTML = '<div>' + 0 + '</div>';
+            console.log($(x));
+
+            var echoId = tracks[i].uri.replace('spotify', 'spotify-WW');
             $.getJSON(url,
                 {
                     id: echoId,
@@ -113,21 +127,22 @@ require([
                     bucket: ['audio_summary']
                 },
                 function (data) {
+                    $('#error').text(i++);
                     if (checkResponse(data)) {
+
                         var spotifyId = data.response.track.foreign_id.replace('spotify-WW', 'spotify');
-                        //var trackTr = $('tr[data-uri=\'' + spotifyId + '\']')[0];
                         var albumTd = $('tr[data-uri=\'' + spotifyId + '\'] td[class="sp-list-cell sp-list-cell-album"]')[0];
 
-                        if (data.response.track.audio_summary.tempo == null) {
-                            tempo = 0;
+                        if (data.response.track.audio_summary.tempo != null) {
+                            var tempo = data.response.track.audio_summary.tempo;
+                            albumTd.innerHTML = '<div>' + Math.round(tempo) + '</div>';
                         }
                         else {
-                            var tempo = data.response.track.audio_summary.tempo;
+                            albumTd.innerHTML = '<div>0</div>';
                         }
-
-                        albumTd.innerHTML = '<div>' + Math.round(tempo) + '</div>';
                     }
                 }
+                // TODO Handle limit reached, missing tracks or missing audio summary
             );
         }
     }
@@ -135,7 +150,6 @@ require([
     function checkResponse(data) {
         if (data.response) {
             if (data.response.status.code != 0) {
-                $('#error').text("Whoops... Unexpected error from server. " + data.response.status.message);
                 console.log(JSON.stringify(data.response));
             } else {
                 return true;
